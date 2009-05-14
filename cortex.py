@@ -21,7 +21,7 @@ class Controller:
 
     for source in sources:
       reader = TimedReaderContainer(source['class'](source['args']),
-                                      source['interval'], self)
+                                    source['interval'], self)
       self.readers.append(reader)
 
     for reader in self.readers:

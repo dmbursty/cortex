@@ -1,0 +1,16 @@
+A quick rundown of the system:
+
+cortex.py:
+  Is the main file, and contains the Controller class.
+  The Controller is used for initialization.
+
+
+Data       -- The external data that we want to monitor for updates
+-------------------------------------------------------------------
+Sources    -- Specify data locations, data type, and other parameters
+Readers    -- Generic interfaces for retrieving various types of data
+Containers -- Use 1 or more readers to retrieve data and pass it on to..
+Store      -- Stores the data locally
+View       -- Presents data from the store to the user
+
+Interface  -- Dynamically change sources
