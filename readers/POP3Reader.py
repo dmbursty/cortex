@@ -1,9 +1,12 @@
 import getpass
 import poplib
 
-# DO NO USE ME.  POP3 is bad :( use IMAPReader
+from BaseReader import BaseReader
 
-class POP3Reader:
+# DO NO USE ME.  POP3 is bad :( use IMAPReader
+# Also, This have not been tested very well
+
+class POP3Reader(BaseReader):
   """This reader is used to monitor an email inbox.
      WARNING: This reader will retrieve all of your emails, and treat
      each one as an item.
@@ -14,7 +17,6 @@ class POP3Reader:
   def __init__(self, args):
     self.server = args['server']
     self.account = args['account']
-    self.email = args['email']
     if args['ssl']:
       self.pop3 = poplib.POP3_SSL
     else:
@@ -22,73 +24,46 @@ class POP3Reader:
     self.data = None
     self.moredata = None
     self.identifier = None
-    self.password = getpass.getpass("Enter password for %s:" % self.email)
+    self.password = getpass.getpass("Enter password for %s:" % self.account)
 
     pop3 = self.pop3(self.server)
     pop3.user(self.account)
     try:
       pop3.pass_(self.password)
+      self.state = pop3.stat()
     except poplib.error_proto:
-      raise Exception("Incorrect username/password for %s" % self.email)
-    pop3.quit()
+      raise Exception("Incorrect username/password for %s" % self.account)
+    finally:
+      pop3.quit()
 
-    print "Created POP3 Reader for %s" % self.email
-    if not self.checkForUpdate():
-      raise Exception("No update at Init")
-    print "Latest: " + self.getItems[0].toSummary()
+    print "Starting POP3 Reader for %s" % self.account
+    BaseReader.__init__(self)
 
-  def checkForUpdate(self):
-    """Check the source for an update by comparing identifiers.
-       This call will update self.data
-    """
-    self.retrieveData()
-    # Functionality for identifiers goes here
-    new_identifier = len(self.moredata.keys())
-    if new_identifier != self.identifier:
-      self.identifier = new_identifier
-      return True
-    return False
 
-  def retrieveData(self):
-    """Retrieve data from the source"""
+  def checkUpdate(self):
+    """Check for an update, and put it in self.items"""
+    # Retrieve data through pop3
     pop3 = self.pop3(self.server)
     pop3.user(self.account)
     pop3.pass_(self.password)
-    self.data = pop3.list()
+    # Check if there are any new emails (will also trigger on deletes?)
+    newstate = pop3.stat()
+    if newstate != self.state:
+      self.state = newstate
+      # Make items
+      self.items.append(POP3Item(self.state, {'account':self.account}))
     pop3.quit()
 
-  def getUpdate(self):
-    """Return the latest update to the source"""
 
-  def getItems(self):
-    """Return all items of the source"""
-    # Turn raw data into items, and return
-    items = []
-    for num, data in self.moredata.items():
-      items.append(POP3Item(num, data))
-    return items
-
-
-class POP3Item:
+class POP3Item(BaseReader):
   """Object for storing an item. Has output formatters"""
-  def __init__(self, num, data, aux = None):
-    self.num = num
-    self.aux = aux
+  def __init__(self, data, metadata):
+    BaseItem.__init__(self, data, metadata)
 
-    self.headers = {}
-    for line in data:
-      k, v = line.split(": ")
-      self.headers[k] = v
+  def getDataString(self):
+    """Get the complete item data as a string"""
+    return "%s now has %d emails" % (self.metadata['account'], self.data[0])
 
-  def toString(self):
-    """Get the item as a complete string"""
-    return self.headers['Subject']
-
-  def toSummary(self):
+  def getSummaryString(self):
     """Get a short summary of the item"""
-    return self.headers['Subject']
-
-  def toHTML(self):
-    """Get the item as an HTML formatted string"""
-    # Remember to escape when necessary
-    return self.toString()
+    return "%s now has %d emails" % (self.metadata['account'], self.data[0])

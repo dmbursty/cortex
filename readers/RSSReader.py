@@ -1,7 +1,10 @@
 import urllib2
 from xml.dom import minidom
 
-class RSSReader:
+from BaseReader import BaseReader, BaseItem
+
+
+class RSSReader(BaseReader):
   """Reader for RSS Feeds"""
   def __init__(self, args):
     # The address of the xml feed
@@ -10,77 +13,50 @@ class RSSReader:
     self.data = None
     # A value to compare with to check whether the feed has updated
     # Currently is hash of latest item title
-    self.identifier = None
+    self.latest = None
 
     print "Created RSS Reader with source %s" % self.source
-    if not self.checkForUpdate():
-      raise Exception("No update at Init")
+    BaseReader.__init__(self)
 
-  def checkForUpdate(self):
-    """Check the source for an update by comparing hashes of the latest item.
-       This call will update self.data.
-    """
-    self.retrieveData()
-    latest_item = self.data.getElementsByTagName("item")[0]
-    new_identifier = hash(latest_item.childNodes[1].firstChild.data)
-    if new_identifier == self.identifier:
-      return False
-    else:
-      self.identifier = new_identifier
-      return True
+  def checkUpdate(self):
+    """Check for an update, and put it in self.items"""
+    # Pull feed data
+    request = urllib2.Request(self.source)
+    opener  = urllib2.build_opener()
+    feed    = opener.open(request).read()
+    data    = minidom.parseString(feed)
 
-  def retrieveData(self):
-    """Retrieve and parse the feed"""
-    if self.source is None:
-      raise Exception("No source was given")
-    request   = urllib2.Request(self.source)
-    opener    = urllib2.build_opener()
-    feed      = opener.open(request).read()
-    self.data = minidom.parseString(feed)
-
-  def getItems(self):
-    """From the saved data, return a list of items.
-       Each item is a dictionary of the fields.
-    """
-    if self.data is None:
-      raise Exception("Cannot get items - no data present")
-
-    return_items = []
-    items = self.data.getElementsByTagName("item")
-    if items is []:
-      raise Exception("Feed was empty")
-    for item in items:
-      return_items.append(RSSItem(self,
-                                  item.childNodes[1].firstChild.data,
-                                  item.childNodes[3].firstChild.data,
-                                  item.childNodes[5].firstChild.data))
-
-    return return_items
+    # Check if there is a new item
+    items = data.getElementsByTagName("item")
+    latest_item = items[0]
+    latest = latest_item.childNodes[1].firstChild.data
+    if self.latest is None:
+      self.latest = latest
+    elif self.latest != latest:
+      # Constuct RSS items
+      for item in items:
+        # Loop until we hit one we've already handled
+        if item.childNodes[1].firstChild.data == self.latest:
+          break
+        self.items.append(RSSItem(item, {'source':self.source}))
+      self.latest = latest
 
 
-class RSSItem:
-  """Object for storing an item. Has output formatters"""
-  def __init__(self, reader, title, link, text, aux = None):
-    self.reader = reader
-    self.title = title
-    self.link = link
-    self.text = text
-    self.aux = aux
+class RSSItem(BaseItem):
+  def __init__(self, data, metadata):
+    # data is the xml object containing the RSS data
+    #   childNode[1]: title
+    #   childNode[3]: link
+    #   childNode[5]: text
+    BaseItem.__init__(self, data, metadata)
 
-  def toString(self):
-    """Get the item as a complete string"""
-    ret = self.title + "\n"
-    ret += self.text + "\n"
-    ret += "Source: " + self.link + "\n"
-    ret += "Additional data:\n"
-    for k, v in self.aux:
-      ret += "%s: %s\n" % (str(k), str(v))
-    return ret
+  def getDataString(self):
+    """Get the complete item data as a string"""
+    return "%s\n%s\nSource: %s" % (self.data.childNodes[1].firstChild.data,
+                                   self.data.childNodes[5].firstChild.data,
+                                   self.data.childNodes[3].firstChild.data)
 
-  def toSummary(self):
-    """Get a short summary of the item"""
-    return "%s:\n%s" % (self.reader.source, self.title)
-
-  def toHTML(self):
-    """Get the item as an HTML formatted string"""
-    return "Not implemented yet - RSS.toHTML"
+  def getSummaryString(self):
+    """Get a short summary of the self.data"""
+    return "%s:\n    %s" % (self.data.childNodes[3].firstChild.data,
+                            self.data.childNodes[1].firstChild.data)

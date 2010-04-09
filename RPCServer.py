@@ -11,7 +11,8 @@ class RPCServer(threading.Thread):
                                      requestHandler=SimpleXMLRPCRequestHandler)
     self.server.register_introspection_functions()
 
-    self.server.register_function(self.rpc_kill, "kill")
+    self.server.register_function(self.kill, "kill")
+    self.server.register_function(self.addManager, "addManager")
 
     threading.Thread.__init__(self)
 
@@ -21,12 +22,19 @@ class RPCServer(threading.Thread):
       self.server.handle_request()
     self.server.server_close()
 
-  def rpc_kill(self):
+  def kill(self):
     self.mutex.acquire()
     self.controller.kill()
+    self.die = True
     self.mutex.release()
     return 0
 
+  def addManager(self, manager, args):
+    """Start up a new manager with given args
 
-  def kill(self):
-    self.die = True
+    manager: String name of manager type
+    args: Dict of manager arguments"""
+    self.mutex.acquire()
+    ret = self.controller.addManager(manager, args)
+    self.mutex.release()
+    return ret

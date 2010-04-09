@@ -1,16 +1,18 @@
 A quick rundown of the system:
 
 cortex.py:
-  Is the main file, and contains the Controller class.
-  The Controller is used for initialization.
+  Main script that starts up the whole system.
+
+util.py:
+  Used to send commands to the system over RPC.
+    use "util.py kill" to shut down.
 
 
 Data       -- The external data that we want to monitor for updates
--------------------------------------------------------------------
-Sources    -- Specify data locations, data type, and other parameters
-Readers    -- Generic interfaces for retrieving various types of data
-Containers -- Use 1 or more readers to retrieve data and pass it on to..
-Store      -- Stores the data locally
-View       -- Presents data from the store to the user
-
-Interface  -- Dynamically change sources
+--------------------------------------------------------------------------------
+RPCServer  -- Fairly self-explanitory.  Calls to the Controller for handling.
+Controller -- Interprets commands from RPC, and handles the managers and depot.
+Readers    -- Generic interfaces for retrieving various types of data.
+Managers   -- Use 1 or more readers to retrieve data and pass it to a depot.
+Depot      -- Recieves and stores data.
+View       -- Presents data from the store to the user.

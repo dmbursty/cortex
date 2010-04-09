@@ -1,70 +1,48 @@
-# THIS FILE IS NOT TO BE USED
-# It is a starting point for building a reader
-#
-# Copy this file and save as the new reader
-# s/Base/Type/g to change BaseReader to TypeReader etc
-
-raise NotImplemented("This file is for reference only. DO NOT USE")
-
 class BaseReader:
-  def __init__(self, args):
-    self.source = args['source']
-    self.data = None
-    self.identifier = None
-
-    print "Created Base Reader with source %s" % self.source
-    if not self.checkForUpdate():
-      raise Exception("No update at Init")
-
-  def checkForUpdate(self):
-    """Check the source for an update by comparing identifiers.
-       This call will update self.data
-    """
-    self.retrieveData()
-    # Functionality for identifiers goes here
-    new_identifier = 0
-    if new_identifier != self.identifier:
-      self.identifier = new_identifier
-      return True
-    return False
-
-  def retrieveData(self):
-    """Retrieve data from the source"""
-    if self.source is None:
-      raise Exception("No source was given")
-    # Get data from source
-    self.data = "Base Data"
+  def __init__(self):
+    self.items = []
 
   def getUpdate(self):
-    """Return the latest update to the source"""
+    """Check for updates, and retrieve them"""
+    self.checkUpdate()
+    # getItems will delete items as it returns them
+    return self.getItems()
 
   def getItems(self):
-    """Return all items of the source"""
-    # Turn raw data into items, and return
-    items = []
-    for word in self.data.split(" "):
-      items.append(BaseItem(word))
-    return items
+    """Return all available items (deletes them locally)"""
+    ret = self.items
+    self.items = []
+    return ret
+
+  def peekItems(self):
+    """Returns all available items, keeping them locally"""
+    # Tuple prevents access to the local list, but does not stop
+    # changing the items themselves
+    return tuple(self.items)
+
+  # NOT IMPLMENTED
+  def checkUpdate(self):
+    """This function must be overwritten and should check for an update
+       and put the update items in self.items"""
+    raise NotImplemented("BaseReader: You must implement checkUpdate")
 
 
 class BaseItem:
-  """Object for storing an item. Has output formatters"""
-  def __init__(self, data, aux = None):
-    # data is a mandatory field
+  """Object for storing an item."""
+  def __init__(self, data, metadata = {}):
+    """data can be in any format, as accessors must be written,
+       metadata should be a dict."""
     self.data = data
-    # aux is a dictionary of optional fields
-    self.aux = aux
+    self.metadata = metadata
 
-  def toString(self):
-    """Get the item as a complete string"""
-    ret = self.data + "\n"
-    return ret
+  def getMetadata(self):
+    return metadata
 
-  def toSummary(self):
+  # NOT IMPLMENTED
+  def getDataString(self):
+    """Get the complete item data as a string"""
+    raise NotImplemented("BaseItem: You must implement getDataString")
+
+  def getSummaryString(self):
     """Get a short summary of the item"""
-    return str(len(self.data))
-
-  def toHTML(self):
-    """Get the item as an HTML formatted string"""
-    # Remember to escape when necessary
-    return "<h1>" + self.data + "<\h1>"
+    raise NotImplemented("BaseItem: You must implement getSummaryString")
