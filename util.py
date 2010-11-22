@@ -11,14 +11,16 @@ if sys.argv[1] == 'kill':
   server.kill()
 elif sys.argv[1] == 'test':
   print server.addManager("TimerManager",
-                          {'interval': 60,
-                           'reader': 'SimpleWebsite',
+                          {'interval': 600,
+                           'reader': 'RSS',
                            'reader_args': 
-      {'source':"http://www.qwantz.com/index.php",
-       #'regex':".*"
-       #'regex':"<img src=\"http://www.qwantz.com/comics/.*?\" " + \
-               #"class=\"comic\" title=\".*?\">"
-       },
+      {'source':"http://feeds.gawker.com/kotaku/full"},
+                           })
+  print server.addManager("TimerManager",
+                          {'interval': 600,
+                           'reader': 'Atom',
+                           'reader_args': 
+      {'source':"http://feeds2.feedburner.com/fmylife"},
                            })
 else:
   print "Unrecognized argument: %s" % sys.argv[1]

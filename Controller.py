@@ -1,5 +1,7 @@
 import threading
 
+from depots.RSSDepot import RSSDepot
+
 import depots.DepotFactory as DepotFactory
 import managers.ManagerFactory as ManagerFactory
 
@@ -10,7 +12,8 @@ class Controller:
   def __init__(self):
     self.managers = []
     self.mutex = threading.Lock()
-    self.depot = DepotFactory.getDefaultDepot()
+    self.depot = RSSDepot("/home/max/public_html/burstyn.ca/cortex.xml")
+    self.nextID = 1
 
   def kill(self):
     """Shut down the entire system"""
@@ -28,7 +31,8 @@ class Controller:
     manager_class = ManagerFactory.getManager(manager)
     if manager_class:
       try:
-        self.managers.append(manager_class(self.depot, args))
+        self.nextID += 1
+        self.managers.append(manager_class(self.nextID, self.depot, args))
         self.managers[-1].start()
       except KeyError, e:
         # Manager init failed due to missing arg

@@ -4,8 +4,8 @@ from xml.dom import minidom
 from BaseReader import BaseReader, BaseItem
 
 
-class RSSReader(BaseReader):
-  """Reader for RSS Feeds"""
+class AtomReader(BaseReader):
+  """Reader for Atom Feeds"""
   def __init__(self, args):
     # The address of the xml feed
     self.source = args['source']
@@ -15,7 +15,7 @@ class RSSReader(BaseReader):
     # Currently is hash of latest item title
     self.latest = None
 
-    print "Created RSS Reader with source %s" % self.source
+    print "Created Atom Reader with source %s" % self.source
     BaseReader.__init__(self)
 
   def checkUpdate(self):
@@ -27,7 +27,7 @@ class RSSReader(BaseReader):
     data    = minidom.parseString(feed)
 
     # Check if there is a new item
-    items = data.getElementsByTagName("item")
+    items = data.getElementsByTagName("entry")
     latest_item = items[0]
     latest = latest_item.childNodes[1].firstChild.data
     if self.latest is None:
@@ -38,11 +38,11 @@ class RSSReader(BaseReader):
         # Loop until we hit one we've already handled
         if item.childNodes[1].firstChild.data == self.latest:
           break
-        self.items.append(RSSItem(item, {'source':self.source}))
+        self.items.append(AtomItem(item, {'source':self.source}))
       self.latest = latest
 
 
-class RSSItem(BaseItem):
+class AtomItem(BaseItem):
   def __init__(self, data, metadata):
     # data is the xml object containing the RSS data
     BaseItem.__init__(self, data, metadata)
@@ -61,8 +61,8 @@ class RSSItem(BaseItem):
 
   def link(self):
     """Get the link of the item"""
-    return self.data.getElementsByTagName("link")[0].firstChild.data
+    return self.data.getElementsByTagName("link")[0].getAttribute("href")
 
   def content(self):
     """Get the content of the item"""
-    return self.data.getElementsByTagName("description")[0].firstChild.data
+    return self.data.getElementsByTagName("content")[0].firstChild.data

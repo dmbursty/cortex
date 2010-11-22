@@ -53,3 +53,11 @@ class IMAPItem(BaseItem):
   def getSummaryString(self):
     """Get a short summary of the item"""
     return "%s now has %d emails" % (self.metadata['email'], self.data[1][0])
+
+  def title(self):
+    """Get the title of the item"""
+    return "New email for %s" % self.metadata['email']
+
+  def content(self):
+    """Get the content of the item"""
+    return "%s now has %d emails" % (self.metadata['email'], self.data[1][0])

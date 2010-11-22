@@ -37,3 +37,7 @@ class LocalFileItem(BaseItem):
   def getSummaryString(self):
     """Get a short summary of the item"""
     return "Update found in %s" % self.data
+
+  def title(self):
+    """Get the title of the item"""
+    return "Update found in %s" % self.data

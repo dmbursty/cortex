@@ -46,3 +46,18 @@ class BaseItem:
   def getSummaryString(self):
     """Get a short summary of the item"""
     raise NotImplemented("BaseItem: You must implement getSummaryString")
+
+  def title(self):
+    """Get the title of the item"""
+    # All items need a title
+    raise NotImplemented("BaseItem: You must implement title")
+
+  def link(self):
+    """Get the link of the item"""
+    # Default empty string
+    return ""
+
+  def content(self):
+    """Get the content of the item"""
+    # Default empty string
+    return ""

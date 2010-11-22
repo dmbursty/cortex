@@ -1,0 +1,7 @@
+- Cleanup and standardization of Items
+- Depot getters
+- IOError checks in RSSDepot
+- Unique IDs for Managers
+- logging module
+- force manager updates
+- Admin interface

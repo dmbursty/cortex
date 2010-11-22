@@ -1,7 +1,12 @@
-class CoutDepot:
-  def __init__(self):
-    pass
+from BaseDepot import BaseDepot
 
-  def update(self, items):
+class CoutDepot (BaseDepot):
+  def __init__(self):
+    BaseDepot.__init__(self)
+
+  def update(self, source, items):
     for item in items:
-      print "Update:", item.getSummaryString()
+      print item.title()
+      print item.link()
+      print item.content()
+      print "\n"

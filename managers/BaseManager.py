@@ -4,7 +4,8 @@ import readers.ReaderFactory as ReaderFactory
 
 class BaseManager (threading.Thread):
   """Base class for managers"""
-  def __init__(self, depot):
+  def __init__(self, id, depot):
+    self.id = id
     self.mutex = threading.Lock()
     self.event = threading.Event()
     self.die = False
