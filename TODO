@@ -1,7 +1,8 @@
 - Cleanup and standardization of Items
 - Depot getters
-- IOError checks in RSSDepot
 - Unique IDs for Managers
 - logging module
 - force manager updates
 - Admin interface
+- RSSDepot: limit size of output file
+- Set up under pylons

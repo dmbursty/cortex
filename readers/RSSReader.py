@@ -28,18 +28,14 @@ class RSSReader(BaseReader):
 
     # Check if there is a new item
     items = data.getElementsByTagName("item")
-    latest_item = items[0]
-    latest = latest_item.childNodes[1].firstChild.data
-    if self.latest is None:
-      self.latest = latest
-    elif self.latest != latest:
-      # Constuct RSS items
-      for item in items:
-        # Loop until we hit one we've already handled
-        if item.childNodes[1].firstChild.data == self.latest:
-          break
-        self.items.append(RSSItem(item, {'source':self.source}))
-      self.latest = latest
+    latest = items[0].getElementsByTagName("title")[0].firstChild.data
+    # Constuct RSS items
+    for item in reversed(items):
+      # Loop through ones we've already done
+      if self.latest is not None and item.getElementsByTagName("title")[0].firstChild.data == self.latest:
+        continue
+      self.items.append(RSSItem(item, {'source':self.source}))
+    self.latest = latest
 
 
 class RSSItem(BaseItem):
@@ -57,12 +53,15 @@ class RSSItem(BaseItem):
 
   def title(self):
     """Get the title of the item"""
-    return self.data.getElementsByTagName("title")[0].firstChild.data
+    title = self.data.getElementsByTagName("title")[0].firstChild.data
+    return title
 
   def link(self):
     """Get the link of the item"""
-    return self.data.getElementsByTagName("link")[0].firstChild.data
+    link = self.data.getElementsByTagName("link")[0].firstChild.data
+    return link
 
   def content(self):
     """Get the content of the item"""
-    return self.data.getElementsByTagName("description")[0].firstChild.data
+    content = self.data.getElementsByTagName("description")[0].firstChild.data
+    return content
