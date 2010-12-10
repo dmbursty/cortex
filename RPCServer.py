@@ -1,40 +1,34 @@
 import threading
-from SimpleXMLRPCServer import SimpleXMLRPCServer
-from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 
-class RPCServer(threading.Thread):
-  def __init__(self, controller):
+from RegistryRPCServer import RegistryRPCServer
+
+from common import synchronize
+
+class RPCServer(RegistryRPCServer):
+  def __init__(self, controller, name="cortex"):
     self.mutex = threading.Lock()
     self.controller = controller
-    self.die = False
-    self.server = SimpleXMLRPCServer(("localhost", 8000),
-                                     requestHandler=SimpleXMLRPCRequestHandler)
-    self.server.register_introspection_functions()
+
+    RegistryRPCServer.__init__(self, name)
 
     self.server.register_function(self.kill, "kill")
+    self.server.register_function(self.ping, "ping")
     self.server.register_function(self.addManager, "addManager")
 
-    threading.Thread.__init__(self)
+  @synchronize('mutex')
+  def ping(self):
+    return "pong!"
 
-  def run(self):
-    print "RPC Server started"
-    while not self.die:
-      self.server.handle_request()
-    self.server.server_close()
-
+  @synchronize('mutex')
   def kill(self):
-    self.mutex.acquire()
     self.controller.kill()
     self.die = True
-    self.mutex.release()
     return 0
 
+  @synchronize('mutex')
   def addManager(self, manager, args):
     """Start up a new manager with given args
 
     manager: String name of manager type
     args: Dict of manager arguments"""
-    self.mutex.acquire()
-    ret = self.controller.addManager(manager, args)
-    self.mutex.release()
-    return ret
+    return self.controller.addManager(manager, args)

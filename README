@@ -3,16 +3,20 @@ A quick rundown of the system:
 cortex.py:
   Main script that starts up the whole system.
 
-util.py:
-  Used to send commands to the system over RPC.
-    use "util.py kill" to shut down.
+admin.py:
+  Simple command interface used to send commands to the system over RPC.
 
 
 Data       -- The external data that we want to monitor for updates
 --------------------------------------------------------------------------------
-RPCServer  -- Fairly self-explanitory.  Calls to the Controller for handling.
+Registry   -- Handles distibution of ports, and name:port mappings of servers
+RPCServer  -- Fairly self-explanatory.  Calls to the Controller for handling.
 Controller -- Interprets commands from RPC, and handles the managers and depot.
 Readers    -- Generic interfaces for retrieving various types of data.
 Managers   -- Use 1 or more readers to retrieve data and pass it to a depot.
-Depot      -- Recieves and stores data.
+Depot      -- Receives and stores data.
 View       -- Presents data from the store to the user.
+
+
+Misc:
+  Registry runs on port 9047, and distributes ports to Cortex systems

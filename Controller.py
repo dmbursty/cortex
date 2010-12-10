@@ -1,4 +1,5 @@
 import threading
+import traceback
 
 from depots.RSSDepot import RSSDepot
 
@@ -41,6 +42,7 @@ class Controller:
       except Exception, e:
         # Manager init failed due to other reason
         print e
+        traceback.print_exc()
         return 3
     else:
       # If We couldn't find the manager type

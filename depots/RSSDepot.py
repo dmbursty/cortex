@@ -19,7 +19,7 @@ class RSSDepot (BaseDepot):
     # Build xml file
     out = RSS_HEADER
 
-    for item in reversed(self.items):
+    for item in reversed(self.items[-30:]):
       out += self.itemToXML(item)
 
     out += RSS_FOOTER
@@ -27,7 +27,8 @@ class RSSDepot (BaseDepot):
     # Write xml file
     try:
       f = open(self.outfile, 'w')
-      f.write(out.encode("utf-8"))
+      ff = out.decode("utf-8").encode("utf_8")
+      f.write(ff)
     except IOError, e:
       print "IOError in RSSDepot: %s" % e
       raise

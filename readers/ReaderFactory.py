@@ -5,6 +5,7 @@ from RSSReader import RSSReader
 from RegexWebsiteReader import RegexWebsiteReader
 from SimpleWebsiteReader import SimpleWebsiteReader
 from POP3Reader import POP3Reader
+from SteamSaleReader import SteamSaleReader
 
 _reader_lookup = {'IMAP':IMAPReader,
                   'LocalFile':LocalFileReader,
@@ -12,6 +13,7 @@ _reader_lookup = {'IMAP':IMAPReader,
                   'Atom':AtomReader,
                   'RegexWebsite':RegexWebsiteReader,
                   'SimpleWebsite':SimpleWebsiteReader,
+                  'SteamSale':SteamSaleReader,
                   #'POP3':POP3Reader,  # Not Supported
                  }
 

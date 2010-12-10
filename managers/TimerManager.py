@@ -8,8 +8,11 @@ class TimerManager (BaseManager):
     self.reader = self.makeReader(args['reader'], args['reader_args'])
     self.interval_secs = args['interval']
     BaseManager.__init__(self, id, depot)
+
     # Get initial items
-    self.check()
+    items = self.reader.getUpdate()
+    if items:
+      self.depot.update(self, items)
 
   def cleanup(self):
     try:

@@ -34,7 +34,7 @@ class AtomReader(BaseReader):
       # Loop through ones we've already done
       if self.latest is not None and item.getElementsByTagName("title")[0].firstChild.data == self.latest:
         continue
-      self.items.append(RSSItem(item, {'source':self.source}))
+      self.items.append(AtomItem(item, {'source':self.source}))
     self.latest = latest
 
 
