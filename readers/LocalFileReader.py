@@ -12,8 +12,8 @@ class LocalFileReader(BaseReader):
     self.data = file.read()
     file.close()
 
-    print "Starting File Reader with source", self.source
     BaseReader.__init__(self)
+    self.log.info("Starting File Reader with source", self.source)
 
   def checkUpdate(self):
     """Check for an update, and put it in self.items"""

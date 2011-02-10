@@ -1,3 +1,4 @@
+import logging
 import threading
 
 from RegistryRPCServer import RegistryRPCServer
@@ -6,6 +7,7 @@ from common import synchronize
 
 class RPCServer(RegistryRPCServer):
   def __init__(self, controller, name="cortex"):
+    self.log = logging.getLogger("Cortex.RPCServer")
     self.mutex = threading.Lock()
     self.controller = controller
 

@@ -1,3 +1,4 @@
+import logging
 import threading
 import traceback
 
@@ -11,6 +12,7 @@ class Controller:
   """Handles input from the RPC server"""
 
   def __init__(self):
+    self.log = logging.getLogger("Cortex.Controller")
     self.managers = []
     self.mutex = threading.Lock()
     self.depot = RSSDepot("/home/max/public_html/burstyn.ca/cortex.xml")
@@ -36,13 +38,11 @@ class Controller:
         self.managers.append(manager_class(self.nextID, self.depot, args))
         self.managers[-1].start()
       except KeyError, e:
-        # Manager init failed due to missing arg
-        print e
+        self.log.error("Manager init failed due to missing arg: %s" % e)
         return 2
       except Exception, e:
         # Manager init failed due to other reason
-        print e
-        traceback.print_exc()
+        self.log.error("Manager init failed: %s" % traceback.format_exc())
         return 3
     else:
       # If We couldn't find the manager type

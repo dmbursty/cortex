@@ -1,3 +1,4 @@
+import logging
 import threading
 
 import readers.ReaderFactory as ReaderFactory
@@ -5,6 +6,8 @@ import readers.ReaderFactory as ReaderFactory
 class BaseManager (threading.Thread):
   """Base class for managers"""
   def __init__(self, id, depot):
+    self.log = logging.getLogger("Cortex.Managers.%s" %
+                                 self.__class__.__name__)
     self.id = id
     self.mutex = threading.Lock()
     self.event = threading.Event()
@@ -19,7 +22,7 @@ class BaseManager (threading.Thread):
       try:
         self.doWork()
       except Exception, e:
-        print "Manager died unexpectedly:", e
+        self.log.error("Manager died unexpectedly:", e)
         self.die = True
         self.event.set()
       self.mutex.release()

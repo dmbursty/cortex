@@ -1,3 +1,4 @@
+import logging
 import socket
 import threading
 import xmlrpclib
@@ -5,7 +6,7 @@ import xmlrpclib
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 
-from Registry import Registry
+from Registry import Registry, SilentRequestHandler
 
 
 class RegistryRPCServer(threading.Thread):
@@ -22,6 +23,9 @@ class RegistryRPCServer(threading.Thread):
        self.die is set to false
   """
   def __init__(self, name):
+    if not hasattr(self, 'log'):
+      self.log = logging.getlogger("RPC")
+
     try:
       # Connect to Registry
       registry = xmlrpclib.ServerProxy("http://localhost:%d" % Registry.SERVER_PORT)
@@ -29,19 +33,21 @@ class RegistryRPCServer(threading.Thread):
       for i in range(3):
         port = registry.request_port()
         if port == Registry.RET_NO_PORT:
+          self.log.error("No available ports")
           raise Exception("No available ports")
         # Start our server
         self.server = None
         try:
           self.server = SimpleXMLRPCServer(("localhost", port),
-                                            requestHandler=SimpleXMLRPCRequestHandler)
+                                            requestHandler=SilentRequestHandler)
           self.server.register_introspection_functions()
           break
         except socket.error, e:
-          print "Couldn't start on port %d" % port
+          self.log.warning("Couldn't start on port %d" % port)
         
       if self.server is None:
-        raise Exception("To many bad port retries")
+        self.log.error("Too many bad port retries")
+        raise Exception("Too many bad port retries")
 
       # Successfully started our server, register ourselves
       ret = None
@@ -50,24 +56,28 @@ class RegistryRPCServer(threading.Thread):
         if ret == Registry.RET_NAME_EXISTS:
           name = name + "*"
         elif ret == Registry.RET_PORT_EXISTS:
+          self.log.error("Couldn't register port")
           raise Exception("Couldn't register port")
         elif ret == Registry.RET_OK:
           break
         else:
+          self.log.error("Unexpected return code on register")
           raise Exception("Unexpected return code on register")
 
       if ret != Registry.RET_OK:
+        self.log.error("Too many registry retries")
         raise Exception("Too many registry retries")
 
 
       # Successfully started and registered
-      print "Started server %s on port %d" % (name, port)
+      self.log.info("Started server %s on port %d" % (name, port))
       self.name = name
       self.port = port
       self.die = False
       threading.Thread.__init__(self)
 
     except socket.error, e:
+      self.log.error("Could not connect to registry on start up")
       raise Exception("Could not connect to registry on start up")
 
   def run(self):
@@ -81,8 +91,9 @@ class RegistryRPCServer(threading.Thread):
       registry = xmlrpclib.ServerProxy("http://localhost:%d" % Registry.SERVER_PORT)
       ret = registry.unregister(self.name, self.port)
       if ret == Registry.RET_OK:
-        print "Successfully unregistered"
+        self.log.info("Successfully unregistered")
       elif ret == Registry.RET_BAD:
-        print "Could not unregister properly"
+        self.log.warning("Could not unregister properly")
     except socket.error, e:
+      self.log.error("Could not connect to registry on shut down")
       raise Exception("Could not connect to registry on shut down")

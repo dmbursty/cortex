@@ -18,7 +18,7 @@ class TimerManager (BaseManager):
     try:
       self.timer.cancel()
     except:
-      print "No timer found at kill-time"
+      self.log.warning("No timer found at kill-time")
       pass
 
   def doWork(self):
@@ -26,6 +26,8 @@ class TimerManager (BaseManager):
     self.timer.start()
 
   def check(self):
+    if self.die:
+      return
     self.mutex.acquire()
     try:
       items = self.reader.getUpdate()
@@ -33,8 +35,8 @@ class TimerManager (BaseManager):
         self.depot.update(self, items)
       self.event.set()
     except Exception, e:
-      print "TimerManager died while updating"
-      traceback.print_exc()
+      self.log.error("TimerManager died while updating: %s" %
+                         traceback.format_exc())
       self.die = True
       self.event.set()
     self.mutex.release()

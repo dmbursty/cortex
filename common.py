@@ -48,7 +48,7 @@ class codec:
       except KeyError:
         pass
         #print "KeyError: ",
-    print "Couldn't decode: %s" % text
+    #print "Couldn't decode: %s" % text
     return text
 
   @classmethod
@@ -76,7 +76,7 @@ def synchronize(lockname):
         finally:
           lock.release()
       except AttributeError, e:
-        print "Couldn't synchronize function %s" % f.__name__
+        raise Exception("Couldn't synchronize function %s" % f.__name__)
         return f(self, *args, **kwargs)
     return new_f
   return wrap

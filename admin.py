@@ -1,6 +1,11 @@
+#!/usr/bin/python
+
 import cmd
+import os
 import socket
+import subprocess
 import sys
+import time
 import traceback
 import xmlrpclib
 
@@ -27,6 +32,16 @@ class CortexCLI(cmd.Cmd):
 
     # Connect to cortex
     self.server = xmlrpclib.ServerProxy("http://localhost:%d" % port)
+
+  def cmdloop(self, intro=""):
+    # Check that the system is actually running
+    try:
+      self.server.ping()
+      cmd.Cmd.cmdloop(self, intro)
+    except socket.error, e:
+      if e[1] == "Connection refused":
+        print "Server not running, aborting..."
+      return
 
   @netcall
   def do_ping(self, line):
@@ -63,8 +78,36 @@ class RegistryCLI(cmd.Cmd):
     # Connect to the registry
     self.registry = xmlrpclib.ServerProxy("http://localhost:%d" % Registry.SERVER_PORT)
 
+    # Check if a registry is running
+    try:
+      self.registry.ping()
+    except socket.error, e:
+      if e[1] == "Connection refused":
+        print "No registry found, starting a new one"
+        subprocess.Popen(["python", "Registry.py"])
+
     if server is not None:
       self.do_connect(server)
+
+  @netcall
+  def do_start(self, line):
+    """Start a new cortex server"""
+
+    if not line:
+      line = "cortex"
+
+    # First, check that the name isn't already taken
+    clients = self.registry.get_clients()
+    if clients.has_key(line):
+      print "A server already exists with that name (%s)" % line
+      return False
+
+    subprocess.Popen(["python", "cortex.py", line])
+    # Wait for the system to init
+    time.sleep(1)
+    print "Started server, connecting..."
+    return self.do_connect(line)
+    
 
   # Registry function wrappers
   def do_kill(self, line):
@@ -72,7 +115,9 @@ class RegistryCLI(cmd.Cmd):
 
   @netcall
   def do_killkill(self, line):
+    """Kills the registry"""
     print self.registry.kill()
+    return self.do_exit("")
 
   @netcall
   def do_ping(self, line):

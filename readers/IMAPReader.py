@@ -23,8 +23,8 @@ class IMAPReader(BaseReader):
       raise Exception("Incorrect username/password for %s" % self.email)
     imap.logout()
 
-    print "Created IMAP Reader for %s" % self.email
     BaseReader.__init__(self)
+    self.log.info("Created IMAP Reader for %s" % self.email)
 
   def checkUpdate(self):
     """Check for an update, and put it in self.items"""

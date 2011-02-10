@@ -1,5 +1,10 @@
+import logging
+import time
+
 class BaseReader:
   def __init__(self):
+    self.log = logging.getLogger("Cortex.Readers.%s" %
+                                 self.__class__.__name__)
     self.items = []
 
   def getUpdate(self):
@@ -34,9 +39,10 @@ class BaseItem:
        metadata should be a dict."""
     self.data = data
     self.metadata = metadata
+    self.metadata['time'] = time.localtime()
 
   def getMetadata(self):
-    return metadata
+    return self.metadata
 
   # NOT IMPLMENTED
   def getDataString(self):

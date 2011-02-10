@@ -36,8 +36,8 @@ class POP3Reader(BaseReader):
     finally:
       pop3.quit()
 
-    print "Starting POP3 Reader for %s" % self.account
     BaseReader.__init__(self)
+    self.log.log("Starting POP3 Reader for %s" % self.account)
 
 
   def checkUpdate(self):

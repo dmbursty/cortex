@@ -15,8 +15,8 @@ class RSSReader(BaseReader):
     # Currently is hash of latest item title
     self.latest = None
 
-    print "Created RSS Reader with source %s" % self.source
     BaseReader.__init__(self)
+    self.log.info("Created RSS Reader with source %s" % self.source)
 
   def checkUpdate(self):
     """Check for an update, and put it in self.items"""

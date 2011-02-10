@@ -15,9 +15,9 @@ class RegexWebsiteReader(BaseReader):
     self.regex = re.compile(args['regex'])
     self.lastmatch = None
 
-    print "Created Regex Website Reader with source %s" % self.source
-    self.checkUpdate()
     BaseReader.__init__(self)
+    self.log.info("Created Regex Website Reader with source %s" % self.source)
+    self.checkUpdate()
 
   def checkUpdate(self):
     """Check for an update, and put it in self.items"""
@@ -35,7 +35,6 @@ class RegexWebsiteReader(BaseReader):
     elif self.lastmatch != match.group(0):
       self.lastmatch = match.group(0)
       self.items.append(RegexWebsiteItem(match, {'source':self.source}))
-      print self.lastmatch
 
 
 class RegexWebsiteItem(BaseItem):

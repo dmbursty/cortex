@@ -11,8 +11,8 @@ class SimpleWebsiteReader(BaseReader):
     self.source = args['source']
     self.state = None
 
-    print "Created Simple Website Reader with source %s" % self.source
     BaseReader.__init__(self)
+    self.log.info("Created Simple Website Reader with source %s" % self.source)
 
   def checkUpdate(self):
     # Get data from source
