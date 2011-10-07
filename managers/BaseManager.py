@@ -5,14 +5,14 @@ import readers.ReaderFactory as ReaderFactory
 
 class BaseManager (threading.Thread):
   """Base class for managers"""
-  def __init__(self, id, depot):
+  def __init__(self, id, mixer):
     self.log = logging.getLogger("Cortex.Managers.%s" %
                                  self.__class__.__name__)
     self.id = id
     self.mutex = threading.Lock()
     self.event = threading.Event()
     self.die = False
-    self.depot = depot
+    self.mixer = mixer
     threading.Thread.__init__(self)
 
   def run(self):

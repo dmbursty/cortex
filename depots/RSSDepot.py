@@ -19,12 +19,12 @@ RSS_FOOTER = "</channel>\n</rss>\n"
 
 
 class RSSDepot (BaseDepot):
-  def __init__(self, outfile):
+  def __init__(self, name, outfile):
+    BaseDepot.__init__(self, name)
     self.outfile = outfile
     self.items = []
-    BaseDepot.__init__(self)
 
-  def update(self, source, items):
+  def update(self, items):
     self.items.extend(items)
 
     # Build xml file
