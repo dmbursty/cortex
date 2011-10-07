@@ -1,0 +1,12 @@
+<servers>
+  <server name="test_cortex">
+    <depot type="RSSDepot">
+    </depot>
+    <manager type="TimerManager">
+      <interval>600</interval>
+      <reader type="RSS">
+        <reader_args source="http://feeds.gawker.com/kotaku/full"/>
+      </reader>
+    </manager>
+  </server>
+</servers>
