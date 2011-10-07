@@ -18,7 +18,8 @@ class RegistryRPCServer(threading.Thread):
 
      The following members will automatically be set during __init__:
        self.server is the RPCServer member
-       self.name is the name of the server, which may be different then the name passed in
+       self.server_name is the name of the server, which may be different than
+           the name passed in
        self.port is the port that the server is running on
        self.die is set to false
   """
@@ -71,7 +72,7 @@ class RegistryRPCServer(threading.Thread):
 
       # Successfully started and registered
       self.log.info("Started server %s on port %d" % (name, port))
-      self.name = name
+      self.server_name = name
       self.port = port
       self.die = False
       threading.Thread.__init__(self)
@@ -89,7 +90,7 @@ class RegistryRPCServer(threading.Thread):
     try:
       # Connect to Registry
       registry = xmlrpclib.ServerProxy("http://localhost:%d" % Registry.SERVER_PORT)
-      ret = registry.unregister(self.name, self.port)
+      ret = registry.unregister(self.server_name, self.port)
       if ret == Registry.RET_OK:
         self.log.info("Successfully unregistered")
       elif ret == Registry.RET_BAD:

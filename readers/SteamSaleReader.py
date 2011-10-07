@@ -1,27 +1,29 @@
 import re
 import httplib
 import urllib2
+import traceback
 
 from BaseReader import BaseReader, BaseItem
 
 class SteamSaleReader(BaseReader):
   SPECIALS_URL = "http://store.steampowered.com/search/?specials=1"
+  SPECIALS_PAGE_URL = "http://store.steampowered.com/search/?specials=1&page=%d"
   ITEM_PATTERN = "<a href=\"[\w\d:/._?=]+?\" class=\"search_result_row.*?</a>"
   # Basic sale pattern
-  DATA_PATTERN = """href=\"([\w\d:/._?=]+?)\"   .*?  # Link
-                    <strike>&\#36;([\d.]+)</strike>  # Original price
-                    </span><br>&\#36;([\d.]+)</div>  # Sale price
-                    .*? <h4>(.+?)</h4>               # Title
+  DATA_PATTERN = """href=\"([\w\d:/._]+)\?.*?\"   .*?  # Link
+                    <strike>&\#36;([\d.]+)</strike>    # Original price
+                    </span><br>&\#36;([\d.]+)</div>    # Sale price
+                    .*? <h4>(.+?)</h4>                 # Title
                     """
   # Pattern for items that are free
-  DATA_FREE_PATTERN = """href=\"([\w\d:/._?=]+?)\"   .*?  # Link
-                         search_price">Free</div>         # Free
-                         .*? <h4>(.+?)</h4>               # Title
+  DATA_FREE_PATTERN = """href=\"([\w\d:/._]+)\?.*?\"   .*?  # Link
+                         search_price">Free</div>           # Free
+                         .*? <h4>(.+?)</h4>                 # Title
                          """
   # Pattern for items under specials that aren't really on sale
-  DATA_EMPTY_PATTERN = """href=\"([\w\d:/._?=]+?)\"   .*?    # Link
-                          search_price">&\#36;([\d.]+)</div> # Base Price
-                          .*? <h4>(.+?)</h4>                 # Title
+  DATA_EMPTY_PATTERN = """href=\"([\w\d:/._]+)\?.*?\"   .*?   # Link
+                          search_price">&\#36;([\d.]+)</div>  # Base Price
+                          .*? <h4>(.+?)</h4>                  # Title
                           """
 
   def __init__(self, args):
@@ -38,38 +40,58 @@ class SteamSaleReader(BaseReader):
 
   def diffSales(self, sa, sb):
     if sa is None or sb is None:
+      self.log.info("Diff sales due to None")
       return True
 
     if len(sa) != len(sb):
+      self.log.info("Diff sales due to # of sales")
       return True
 
     for ia, ib in zip(sa, sb):
       for ka, kb in zip(ia, ib):
         if ka != kb:
+          self.log.info("Diff sales due to %s != %s" % (ka, kb))
           return True
 
     return False
 
   def checkUpdate(self):
     """Check for an update, and put it in self.items"""
-    request = urllib2.Request(self.SPECIALS_URL)
+    items = []
+    maxPages = 7
     opener  = urllib2.build_opener()
 
-    # Try up to 3 times
-    numTries = 3
-    for i in range(numTries):
-      try:
-        data = opener.open(request).read()
+    # Check for multiple pages of sales
+    for page in range(1, maxPages):
+      request = urllib2.Request(self.SPECIALS_PAGE_URL % page)
+
+      # Try up to 3 times
+      numTries = 3
+      for i in range(numTries):
+        try:
+          data = opener.open(request).read()
+          new_items = re.findall(self.regex, data)
+          self.log.debug("Found %d sales for page %d" % (len(new_items), page))
+          items.extend(new_items)
+          break
+        except (httplib.IncompleteRead, httplib.BadStatusLine),  e:
+          if i == numTries - 1:
+            self.log.warning(traceback.format_exc())
+            return
+          continue
+        except urllib2.URLError, e:
+          if i == numTries - 1:
+            self.log.warning(traceback.format_exc())
+            return
+          continue
+
+      # Stop checking pages after an empty one
+      if len(new_items) == 0:
         break
-      except httplib.IncompleteRead, e:
-        if i == numTries - 1:
-          raise
-        continue
-      
+        
 
     sales = []
 
-    items = re.findall(self.regex, data)
     for item in items:
       try:
         match = self.dataregex.search(item)
@@ -88,7 +110,9 @@ class SteamSaleReader(BaseReader):
     sales.sort()  # Sort by title
 
     if self.diffSales(sales, self.prevsales):
-      self.items.append(SteamSaleItem(sales, self.prevsales, {"link":self.SPECIALS_URL}))
+      self.items.append(SteamSaleItem(sales,
+                                      self.prevsales,
+                                      {"link":self.SPECIALS_URL}))
       self.prevsales = sales
 
 class SteamSaleItem(BaseItem):
@@ -119,11 +143,14 @@ class SteamSaleItem(BaseItem):
       else:
         style = "style=\"color: %s;\"" % color
       if item[1] == 0 and item[2] == 0:
-        return "<a %s href=\"%s\">%s is Free!</a><br>\n" % (style, item[3], item[0])
+        return "<a %s href=\"%s\">%s is Free!</a><br>\n" % (style,
+                                                            item[3],
+                                                            item[0])
       else:
-        sale = int(((float(item[1]) - float(item[2])) / float(item[1])) * 100)
-        return ("<a %s href=\"%s\">%s on sale for %s (%d%% off)</a><br>\n" %
-                   (style, item[3], item[0], item[2], sale))
+        pricedrop = float(item[1]) - float(item[2])
+        sale = int((pricedrop / float(item[1])) * 100)
+        return ("<a %s href=\"%s\">%s for $%s (%d%% / $%.2f off)</a><br>\n" %
+                   (style, item[3], item[0], item[2], sale, pricedrop))
 
   def getDiffSales(self, sa, sb):
     ret = []
@@ -140,6 +167,10 @@ class SteamSaleItem(BaseItem):
       else:
         ib += 1
 
+    while ia < len(sa):
+      ret.append(sa[ia])
+      ia += 1
+
     return ret
 
   def content(self):
@@ -148,18 +179,16 @@ class SteamSaleItem(BaseItem):
 
     # Generate diff information
     if self.prevdata is not None:
-      diffsales = self.getDiffSales(self.data, self.prevdata)
-      if diffsales:
+      newsales = self.getDiffSales(self.data, self.prevdata)
+      endsales = self.getDiffSales(self.prevdata, self.data)
+      if newsales or endsales:
         ret += "Update<br/>\n"
-        for item in diffsales:
+        for item in newsales:
           ret += self.formatItem(item, "#00CC00")
         ret += "</span><br/>\n"
-      else:
-        diffsales = self.getDiffSales(self.prevdata, self.data)
-        for item in diffsales:
+        for item in endsales:
           ret += self.formatItem(item, "#CC0000")
         ret += "</span><br/>\n"
-        
 
     # Full summary
     ret += "Full Summary<br/>\n"

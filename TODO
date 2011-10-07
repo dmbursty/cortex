@@ -1,6 +1,6 @@
 - Cleanup and standardization of Items
 - Depot getters
 - Unique IDs for Managers
-- logging module
 - force manager updates
 - Set up under pylons
+- Refactor readers to allow use from multiple managers

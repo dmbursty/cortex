@@ -13,7 +13,7 @@ if __name__ == "__main__":
   # Set up logging
   logging.config.fileConfig("cortex_logging.conf")
   # Wish there was a better way around this, but logging is causing IOErrors
-  #logging.raiseExceptions = False
+  logging.raiseExceptions = False
 
   controller = Controller()
   if len(sys.argv) > 1:
