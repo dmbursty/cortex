@@ -2,9 +2,8 @@ import logging
 import threading
 import traceback
 
-from depots.RSSDepot import RSSDepot
+from Mixer import Mixer
 
-import depots.DepotFactory as DepotFactory
 import managers.ManagerFactory as ManagerFactory
 
 
@@ -15,7 +14,7 @@ class Controller:
     self.log = logging.getLogger("Cortex.Controller")
     self.managers = []
     self.mutex = threading.Lock()
-    self.depot = RSSDepot("/home/max/public_html/burstyn.ca/cortex.xml")
+    self.mixer = Mixer()
     self.nextID = 1
 
   def kill(self):
@@ -35,7 +34,8 @@ class Controller:
     if manager_class:
       try:
         self.nextID += 1
-        self.managers.append(manager_class(self.nextID, self.depot, args))
+        self.mixer.addLinks(self.nextID, args['depots'])
+        self.managers.append(manager_class(self.nextID, self.mixer, args))
         self.managers[-1].start()
       except KeyError, e:
         self.log.error("Manager init failed due to missing arg: %s" % e)

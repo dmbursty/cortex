@@ -4,15 +4,15 @@ import traceback
 from BaseManager import BaseManager
 
 class TimerManager (BaseManager):
-  def __init__(self, id, depot, args):
+  def __init__(self, id, mixer, args):
     self.reader = self.makeReader(args['reader'], args['reader_args'])
     self.interval_secs = args['interval']
-    BaseManager.__init__(self, id, depot)
+    BaseManager.__init__(self, id, mixer)
 
     # Get initial items
     items = self.reader.getUpdate()
     if items:
-      self.depot.update(self, items)
+      self.mixer.update(self, items)
 
   def cleanup(self):
     try:
@@ -32,7 +32,7 @@ class TimerManager (BaseManager):
     try:
       items = self.reader.getUpdate()
       if items:
-        self.depot.update(self, items)
+        self.mixer.update(self, items)
       self.event.set()
     except Exception, e:
       self.log.error("TimerManager died while updating: %s" %

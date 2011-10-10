@@ -6,7 +6,7 @@ _depot_lookup = {'Cout':CoutDepot,
                 }
 
 def getDefaultDepot():
-  return RSSDepot()
+  return RSSDepot
 
 def getDepot(name):
   try:
