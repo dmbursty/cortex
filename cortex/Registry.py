@@ -107,9 +107,3 @@ class Registry(threading.Thread):
   def get_clients(self):
     self.log.debug("get_clients")
     return self.clients
-
-
-if __name__ == "__main__":
-  # Set up logging
-  logging.config.fileConfig("registry_logging.conf")
-  Registry().start()

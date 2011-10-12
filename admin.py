@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import script_init
+
 import cmd
 import os
 import socket
@@ -9,7 +11,7 @@ import time
 import traceback
 import xmlrpclib
 
-from Registry import Registry
+from cortex.Registry import Registry
 
 # Decorator for interface functions that attempt RPC calls
 def netcall(f):
@@ -84,7 +86,7 @@ class RegistryCLI(cmd.Cmd):
     except socket.error, e:
       if e[1] == "Connection refused":
         print "No registry found, starting a new one"
-        subprocess.Popen(["python", "Registry.py"])
+        subprocess.Popen(["python", "registry.py"])
 
     if server is not None:
       self.do_connect(server)
