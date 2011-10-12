@@ -58,7 +58,6 @@ class CortexCLI(cmd.Cmd):
                                  {'interval': 600,
                                   'reader': 'SteamSale',
                                   'reader_args':  {},
-                                  'depots': ['alt', 'fake'],
                                  })
 
   # Utility functions

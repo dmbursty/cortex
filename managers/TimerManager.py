@@ -6,7 +6,7 @@ from BaseManager import BaseManager
 class TimerManager (BaseManager):
   def __init__(self, id, mixer, args):
     self.reader = self.makeReader(args['reader'], args['reader_args'])
-    self.interval_secs = args['interval']
+    self.interval_secs = int(args['interval'])
     BaseManager.__init__(self, id, mixer)
 
     # Get initial items
@@ -40,5 +40,3 @@ class TimerManager (BaseManager):
       self.die = True
       self.event.set()
     self.mutex.release()
-
-

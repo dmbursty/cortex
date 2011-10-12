@@ -1,12 +1,16 @@
-<servers>
-  <server name="test_cortex">
-    <depot type="RSSDepot">
-    </depot>
-    <manager type="TimerManager">
-      <interval>600</interval>
-      <reader type="RSS">
-        <reader_args source="http://feeds.gawker.com/kotaku/full"/>
-      </reader>
-    </manager>
-  </server>
-</servers>
+<server>
+  <depot type="RSS" name="steam">
+    <outfile>/home/max/public_html/burstyn.ca/steam_cortex.xml</outfile>
+  </depot>
+  <manager type="TimerManager">
+    <interval>600</interval>
+    <reader type="RSS">
+      <source>http://feeds.gawker.com/kotaku/full</source>
+    </reader>
+  </manager>
+  <manager type="TimerManager">
+    <interval>1800</interval>
+    <reader type="SteamSale" />
+    <to_depot>steam</to_depot>
+  </manager>
+</server>

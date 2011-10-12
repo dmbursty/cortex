@@ -7,8 +7,9 @@ class Mixer:
   def __init__(self):
     self.log = logging.getLogger("Cortex.Mixer")
     # Keep a base depot for all items from all managers
-    self.base_depot = RSSDepot("_base",
-                               "/home/max/public_html/burstyn.ca/cortex.xml")
+    #TODO: Change base location so that we can run multiple cortex at once
+    self.base_depot = RSSDepot(
+      "_base", {"outfile": "/home/max/public_html/burstyn.ca/cortex.xml"})
     self.depots = {}
     # Maps manager Id to list of depot names
     self.links = {}
@@ -16,7 +17,8 @@ class Mixer:
     self.testingInit()
 
   def testingInit(self):
-    depot = RSSDepot("alt", "/home/max/public_html/burstyn.ca/alt.xml")
+    depot = RSSDepot(
+        "alt", {"outfile":"/home/max/public_html/burstyn.ca/alt.xml"})
     self.addDepot(depot)
 
   def addDepot(self, depot):

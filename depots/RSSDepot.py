@@ -17,11 +17,20 @@ RSS_ITEMBASE = """
 """
 RSS_FOOTER = "</channel>\n</rss>\n"
 
+# All about unicode:
+# encode: unicode string --> byte string
+# decode: byte string --> unicode string
+# For ascii byte strings == their unicode equivalent
+#
+# Ex: u'\u2022'.encode('utf8')       --> b'\xe2\x80\xa2'
+#     b'\xe2\x80\xa2'.encode('utf8') --> u'\u2022'
+#     b'\xe2\x80\xa2'.encode('utf8') --> UnicodeDecodeError char \xe2
+#     u'\u2022'.decode('utf8')       --> UnicodeEncodeError char \u2022
 
 class RSSDepot (BaseDepot):
-  def __init__(self, name, outfile):
+  def __init__(self, name, args):
     BaseDepot.__init__(self, name)
-    self.outfile = outfile
+    self.outfile = args['outfile']
     self.items = []
 
   def update(self, items):
@@ -31,15 +40,19 @@ class RSSDepot (BaseDepot):
     out = RSS_HEADER
 
     for item in reversed(self.items[-30:]):
-      out += self.itemToXML(item)
+      item_out = self.itemToXML(item)
+      # Ensure each item is a utf8 encoded string
+      try:
+        out += item_out.decode('utf8')
+      except UnicodeEncodeError:
+        out += item_out
 
     out += RSS_FOOTER
 
     # Write xml file
     try:
       f = open(self.outfile, 'w')
-      ff = out.decode("utf-8").encode("utf_8")
-      f.write(ff)
+      f.write(out.encode("utf8"))
     except IOError, e:
       self.log.error("IOError in RSSDepot: %s" % traceback.format_exc())
       raise

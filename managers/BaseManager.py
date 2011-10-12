@@ -39,7 +39,7 @@ class BaseManager (threading.Thread):
     if (reader_class):
       return reader_class(args)
     else:
-      raise Exception("Reader type not found")
+      raise Exception("Reader type %s not found" % reader)
 
   def kill(self):
     self.mutex.acquire()

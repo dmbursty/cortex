@@ -5,6 +5,7 @@ import traceback
 from Mixer import Mixer
 
 import managers.ManagerFactory as ManagerFactory
+import depots.DepotFactory as DepotFactory
 
 
 class Controller:
@@ -34,7 +35,8 @@ class Controller:
     if manager_class:
       try:
         self.nextID += 1
-        self.mixer.addLinks(self.nextID, args['depots'])
+        if "depots" in args:
+          self.mixer.addLinks(self.nextID, args['depots'])
         self.managers.append(manager_class(self.nextID, self.mixer, args))
         self.managers[-1].start()
       except KeyError, e:
@@ -46,6 +48,28 @@ class Controller:
         return 3
     else:
       # If We couldn't find the manager type
+      return 1
+
+    return 0
+
+  def addDepot(self, depot, name, args):
+    """Start up a new depot with the given args
+
+    depot: String name of the depot type
+    name: String unique name for the depot used to identify it
+    args: Dict of depot args"""
+    depot_class = DepotFactory.getDepot(depot)
+    if depot_class:
+      try:
+        new_depot = depot_class(name, args)
+        self.mixer.addDepot(new_depot)
+      except KeyError, e:
+        self.log.error("Depot init failed due to missing arg: %s" % e)
+        return 2
+      except Exception,e :
+        self.log.error("Depot init failed: %s" % traceback.format_exc())
+        return 3
+    else:
       return 1
 
     return 0

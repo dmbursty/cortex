@@ -4,6 +4,11 @@ from xml.dom import minidom
 from BaseReader import BaseReader, BaseItem
 
 
+"""Get an ID for the item to identify it uniquely"""
+def getItemHash(item):
+  #TODO: Make this more unique
+  return item.getElementsByTagName("title")[0].firstChild.data
+
 class RSSReader(BaseReader):
   """Reader for RSS Feeds"""
   def __init__(self, args):
@@ -26,16 +31,24 @@ class RSSReader(BaseReader):
     feed    = opener.open(request).read()
     data    = minidom.parseString(feed)
 
-    # Check if there is a new item
+    # Check if there are new items.  NOTE: The feed has items from newer->older,
+    # but we want the items to be older->newer so reverse iterate
     items = data.getElementsByTagName("item")
-    latest = items[0].getElementsByTagName("title")[0].firstChild.data
-    # Constuct RSS items
-    for item in reversed(items):
-      # Loop through ones we've already done
-      if self.latest is not None and item.getElementsByTagName("title")[0].firstChild.data == self.latest:
-        continue
-      self.items.append(RSSItem(item, {'source':self.source}))
-    self.latest = latest
+    # Start with the oldest item
+    i = len(items) - 1
+    while i >= 0 and self.latest is not None:
+      # Loop through items older than the newest one we saw last time
+      if (getItemHash(items[i]) == self.latest):
+        i -= 1
+        break
+      i -= 1
+
+    while i >= 0:
+      # Remaining items are new, so add them oldest->newest
+      self.items.append(RSSItem(items[i], {'source':self.source}))
+      i -= 1
+
+    self.latest = getItemHash(items[0])
 
 
 class RSSItem(BaseItem):

@@ -4,3 +4,4 @@
 - force manager updates
 - Set up under pylons
 - Refactor readers to allow use from multiple managers
+- Allow for specification of multiple readers per manager in the config
