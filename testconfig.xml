@@ -1,0 +1,7 @@
+<server>
+  <manager type="UpdateTrackerManager">
+    <reader type="RSS">
+      <source>http://feeds.gawker.com/kotaku/full</source>
+    </reader>
+  </manager>
+</server>
