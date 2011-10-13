@@ -1,9 +1,9 @@
 import logging
 import threading
 
-from RegistryRPCServer import RegistryRPCServer
+from registry.RegistryRPCServer import RegistryRPCServer
 
-from common import synchronize
+from common.threading import synchronize
 
 class RPCServer(RegistryRPCServer):
   def __init__(self, controller, name="cortex"):
