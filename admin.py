@@ -11,7 +11,7 @@ import time
 import traceback
 import xmlrpclib
 
-from cortex.Registry import Registry
+from cortex.registry.Registry import Registry
 
 # Decorator for interface functions that attempt RPC calls
 def netcall(f):

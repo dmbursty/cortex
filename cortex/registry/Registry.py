@@ -8,7 +8,7 @@ import xmlrpclib
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 
-from common import synchronize
+from common.threading import synchronize
 
 class SilentRequestHandler(SimpleXMLRPCRequestHandler):
   def log_request(self, code='-', size='-'):

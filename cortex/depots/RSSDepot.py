@@ -1,7 +1,7 @@
 import time
 import traceback
 
-from common import xml
+from common.codecs import xml
 
 from BaseDepot import BaseDepot
 
