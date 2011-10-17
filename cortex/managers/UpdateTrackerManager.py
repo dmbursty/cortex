@@ -5,19 +5,50 @@ import traceback
 
 from BaseManager import BaseManager
 
+from common.histogram import Histogram
+from readers.BaseReader import BaseItem
+
 weekday_names = ["Monday", "Tuesday", "Wednesday", "Thursday",
                  "Friday", "Saturday", "Sunday"]
+
+class UpdateTrackerItem(BaseItem):
+  def __init__(self, data, reader_desc):
+    # Data is a string of the histogram data
+    BaseItem.__init__(self, data)
+    self.reader_desc = reader_desc
+    self.reader_name = reader_desc.split(": ", 1)[0]
+
+  def getDataString(self):
+    return self.content()
+
+  def getSummaryString(self):
+    return "Update summary available for reader %s" % self.reader_desc
+
+  def title(self):
+    return "Update summary for %s reader" % self.reader_name
+
+  def content(self):
+    return ("Update summary for the following reader:<br/>\n" +
+            self.reader_desc + "<br/><br/>\n" + self.data)
 
 class UpdateTrackerManager (BaseManager):
   def __init__(self, id, mixer, args):
     self.reader = self.makeReader(args['reader'], args['reader_args'])
-    self.interval_secs = 600
-    self.summary_secs = 4 * 60 * 60
-    self.summary_timer = threading.Timer(self.summary_secs, self.summarize)
-    self.summary_timer.start()
+    self.reader_desc = "%s: %s" % (args['reader'], args['reader_args'])
+    self.interval_secs = 300
+    self.summary_secs = 1 * 60 * 60
     self.tz = pytz.timezone("US/Eastern")
     self.lastupdate = datetime.datetime.now(self.tz)
+
+    self.day_hist = Histogram("Day of the week", weekday_names)
+    self.hour_hist = Histogram("Hour of the day", range(24))
+    self.delta_hist = Histogram("Time between updates (min)")
+
+    #self.summary_timer = threading.Timer(self.summary_secs, self.summarize)
+    #self.summary_timer.start()
+
     BaseManager.__init__(self, id, mixer)
+    self.summarize()
 
     # Get initial items
     items = self.reader.getUpdate()
@@ -52,12 +83,14 @@ class UpdateTrackerManager (BaseManager):
   def gotUpdate(self):
     now = datetime.datetime.now(self.tz)
     delta = (now - self.lastupdate).seconds / 60
-    print "Update: hour(%d) day(%s) delta(%d)" % (now.hour,
-                                                  weekday_names[now.weekday()],
-                                                  delta)
+    self.day_hist.add(weekday_names[now.weekday()])
+    self.hour_hist.add(now.hour)
+    self.delta_hist.add(delta)
     self.lastupdate = now
 
   def summarize(self):
-    print "Summarize!"
+    hists = [self.day_hist, self.hour_hist, self.delta_hist]
+    histdata = "<br/>\n".join([h.getStr(linebreak="<br/>\n") for h in hists])
+    self.mixer.update(self, [UpdateTrackerItem(histdata, self.reader_desc)])
     self.summary_timer = threading.Timer(self.summary_secs, self.summarize)
     self.summary_timer.start()

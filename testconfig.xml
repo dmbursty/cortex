@@ -1,4 +1,8 @@
 <server>
+  <manager type="TimerManager">
+    <interval>600</interval>
+    <reader type="SteamSale" />
+  </manager>
   <manager type="UpdateTrackerManager">
     <reader type="RSS">
       <source>http://feeds.gawker.com/kotaku/full</source>
