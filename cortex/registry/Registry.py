@@ -2,13 +2,18 @@
 
 import logging
 import logging.config
+import socket
 import threading
+import traceback
 import xmlrpclib
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 
 from common.threading import synchronize
+
+class BadClientPingException(Exception):
+  pass
 
 class SilentRequestHandler(SimpleXMLRPCRequestHandler):
   def log_request(self, code='-', size='-'):
@@ -29,7 +34,6 @@ class Registry(threading.Thread):
     self.log = logging.getLogger("Registry")
 
     self.ports = self.refreshPorts()
-
     self.server = SimpleXMLRPCServer(("localhost", Registry.SERVER_PORT),
                                      requestHandler=SilentRequestHandler)
     self.server.register_introspection_functions()
@@ -40,6 +44,7 @@ class Registry(threading.Thread):
     self.server.register_function(self.register, "register")
     self.server.register_function(self.unregister, "unregister")
     self.server.register_function(self.get_clients, "get_clients")
+    self.server.register_function(self.refresh, "refresh")
 
     threading.Thread.__init__(self)
 
@@ -107,3 +112,18 @@ class Registry(threading.Thread):
   def get_clients(self):
     self.log.debug("get_clients")
     return self.clients
+
+  @synchronize('mutex')
+  def refresh(self):
+    for name, port in self.clients.items():
+      try:
+        client = xmlrpclib.ServerProxy("http://localhost:%d" % port)
+        if not client.ping():
+          raise BadClientPingException()
+      except socket.error, e:
+        if e[1] == "Connection refused":
+          self.log.info("Client %s unreachable, unregistering" % name)
+          self.clients.pop(name)
+      except BadClientPingException:
+        self.log.warning("Client %s unexpected ping response" % name)
+    return Registry.RET_OK

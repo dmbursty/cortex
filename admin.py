@@ -92,6 +92,19 @@ class RegistryCLI(cmd.Cmd):
       self.do_connect(server)
 
   @netcall
+  def do_stop(self, line):
+    clients = self.registry.get_clients()
+    if not clients.has_key(line):
+      print "No cortex server found with that name (%s)" % line
+      return False
+
+    try:
+      client = xmlrpclib.ServerProxy("http://localhost:%d" % clients[line])
+      print client.kill()
+    except socket.error:
+      print "Could not connect to cortex server %s. Try refreshing." % line
+
+  @netcall
   def do_start(self, line):
     """Start a new cortex server"""
 
@@ -112,6 +125,11 @@ class RegistryCLI(cmd.Cmd):
     
 
   # Registry function wrappers
+  @netcall
+  def do_refresh(self, line):
+    print self.registry.refresh()
+    self.do_clients('')
+
   def do_kill(self, line):
     print "Killing the registry can cause several errors, if you are sure use killkill"
 
@@ -128,6 +146,10 @@ class RegistryCLI(cmd.Cmd):
   @netcall
   def do_clients(self, line):
     print self.registry.get_clients()
+
+  @netcall
+  def do_ls(self, line):
+    self.do_clients(line)
 
   @netcall
   def do_badcall(self, line):
@@ -147,6 +169,18 @@ class RegistryCLI(cmd.Cmd):
     except Exception, e:
       print "Unhandled exception in cortex system %s" % line
       traceback.print_exc()
+
+  @netcall
+  def do_shutdown(self, line):
+    self.registry.refresh()
+    clients = self.registry.get_clients()
+    for name, port in clients.items():
+      print "Stopping server %s" % name
+      self.do_stop(name)
+    print "Killing registry"
+    print self.registry.kill()
+    return self.do_exit('')
+
 
   # Utility functions
   def do_exit(self, line):
