@@ -77,7 +77,7 @@ class UpdateTrackerManager (BaseManager):
     self.mutex.release()
 
   def gotUpdate(self):
-    now = datetime.datetime.now(self.tz)
+    now = datetime.datetime.now()
     self.day_hist.add(weekday_names[now.weekday()])
     self.hour_hist.add(now.hour)
 

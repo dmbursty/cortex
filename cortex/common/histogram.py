@@ -56,7 +56,7 @@ class Histogram:
     try:
       increments = float(length) / max(self.buckets.values())
     except (ZeroDivisionError, ValueError):
-      return "Empty histogram<br/>\n"
+      return self.name + "<br/>\nEmpty histogram<br/>\n"
 
     lines = []
 
