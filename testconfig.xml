@@ -4,6 +4,8 @@
     <reader type="SteamSale" />
   </manager>
   <manager type="UpdateTrackerManager">
+    <check_interval>600</check_interval>
+    <summary_interval>3600</summary_interval>
     <reader type="RSS">
       <source>http://feeds.gawker.com/kotaku/full</source>
     </reader>

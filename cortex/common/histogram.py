@@ -45,3 +45,27 @@ class Histogram:
     for l, r in lines:
       ret += l.ljust(padding) + " : " + r + linebreak
     return ret
+
+  def getHTML(self, char='*', length=10):
+    if self.dynamic:
+      keys = self.buckets.keys()
+      keys.sort()
+    else:
+      keys = self.bucket_keys
+
+    try:
+      increments = float(length) / max(self.buckets.values())
+    except (ZeroDivisionError, ValueError):
+      return "Empty histogram<br/>\n"
+
+    lines = []
+
+    for k in keys:
+      lines.append(("%s(%d)" % (k, self.buckets[k]),
+                    char * int(increments * self.buckets[k])))
+
+    ret = self.name + "<br/><table border=0>\n"
+    for l, r in lines:
+      ret += "<tr><td>%s</td><td>: %s</td></tr>\n" % (l, r)
+
+    return ret + "</table>"
