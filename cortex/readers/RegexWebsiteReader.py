@@ -34,25 +34,11 @@ class RegexWebsiteReader(BaseReader):
       self.lastmatch = match.group(0)
     elif self.lastmatch != match.group(0):
       self.lastmatch = match.group(0)
-      self.items.append(RegexWebsiteItem(match, {'source':self.source}))
+      self.items.append(RegexWebsiteItem(self.source))
 
 
 class RegexWebsiteItem(BaseItem):
-  def __init__(self, data):
-    BaseItem.__init__(self, data)
-
-  def getDataString(self):
-    """Get the complete item data as a string"""
-    return "Update found for %s" % self.metadata['source']
-
-  def getSummaryString(self):
-    """Get a short summary of the item"""
-    return "Update found for %s" % self.metadata['source']
-
-  def title(self):
-    """Get the title of the item"""
-    return "Update found for %s" % self.metadata['source']
-
-  def link(self):
-    """Get the link of the item"""
-    return self.metadata['source']
+  def __init__(self, source):
+    BaseItem.__init__(self)
+    self.set_all_content("Update found for %s" % source)
+    self.link = source

@@ -27,17 +27,8 @@ class LocalFileReader(BaseReader):
     
 
 class LocalFileItem(BaseItem):
-  def __init__(self, data):
-    BaseItem.__init__(self, data)
-
-  def getDataString(self):
-    """Get the complete item data as a string"""
-    return "Update found in %s" % self.data
-
-  def getSummaryString(self):
-    """Get a short summary of the item"""
-    return "Update found in %s" % self.data
-
-  def title(self):
-    """Get the title of the item"""
-    return "Update found in %s" % self.data
+  def __init__(self, filename):
+    BaseItem.__init__(self)
+    self.set_all_content("Update found in %s" % filename)
+    # This will probably not work, but better than nothing
+    self.link = "file://%s" % filename

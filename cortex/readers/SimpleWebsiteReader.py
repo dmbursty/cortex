@@ -28,21 +28,7 @@ class SimpleWebsiteReader(BaseReader):
 
 
 class SimpleWebsiteItem(BaseItem):
-  def __init__(self, data):
-    BaseItem.__init__(self, data)
-
-  def getDataString(self):
-    """Get the complete item data as a string"""
-    return "Update found in %s" % self.data
-
-  def getSummaryString(self):
-    """Get a short summary of the item"""
-    return "Update found in %s" % self.data
-
-  def title(self):
-    """Get the title of the item"""
-    return "Update found in %s" % self.data
-
-  def link(self):
-    """Get the link of the item"""
-    return self.data
+  def __init__(self, source):
+    BaseItem.__init__(self)
+    self.set_all_content("Update found in %s" % source)
+    self.link = source

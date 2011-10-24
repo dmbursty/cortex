@@ -4,7 +4,7 @@ import poplib
 from BaseReader import BaseReader
 
 # DO NO USE ME.  POP3 is bad :( use IMAPReader
-# Also, This have not been tested very well
+# Also, This has not been tested very well
 
 class POP3Reader(BaseReader):
   """This reader is used to monitor an email inbox.
@@ -58,12 +58,5 @@ class POP3Reader(BaseReader):
 class POP3Item(BaseReader):
   """Object for storing an item. Has output formatters"""
   def __init__(self, data, metadata):
-    BaseItem.__init__(self, data, metadata)
-
-  def getDataString(self):
-    """Get the complete item data as a string"""
-    return "%s now has %d emails" % (self.metadata['account'], self.data[0])
-
-  def getSummaryString(self):
-    """Get a short summary of the item"""
-    return "%s now has %d emails" % (self.metadata['account'], self.data[0])
+    BaseItem.__init__(self, metadata)
+    self.set_all_content("%s now has %d emails" % (metadata['account'], data[0]))
