@@ -6,5 +6,5 @@ import logging.config
 
 from cortex.registry.Registry import Registry
 
-logging.config.fileConfig("conf/registry_logging.conf")
+logging.config.fileConfig("logs/configs/registry_logging.conf")
 Registry().start()

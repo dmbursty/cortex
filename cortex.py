@@ -13,7 +13,7 @@ from cortex.RPCServer import RPCServer
 from cortex.ConfigLoader import ConfigLoader
 
 # Set up logging
-logging.config.fileConfig("conf/cortex_logging.conf")
+logging.config.fileConfig("logs/configs/cortex_logging.conf")
 # Wish there was a better way around this, but logging is causing IOErrors
 logging.raiseExceptions = False
 
