@@ -25,6 +25,10 @@ class BaseReader:
     # changing the items themselves
     return tuple(self.items)
 
+  # Method for children to define their string representation
+  def __str__(self):
+    return self.__class__.__name__
+
   # NOT IMPLMENTED
   def checkUpdate(self):
     """This function must be overwritten and should check for an update
@@ -34,36 +38,19 @@ class BaseReader:
 
 class BaseItem:
   """Object for storing an item."""
-  def __init__(self, data, metadata = {}):
-    """data can be in any format, as accessors must be written,
-       metadata should be a dict."""
-    self.data = data
+  def __init__(self, metadata = {}):
     self.metadata = metadata
     self.metadata['time'] = time.localtime()
 
-  def getMetadata(self):
-    return self.metadata
+    self.title = ""
+    self.link = ""
 
-  # NOT IMPLMENTED
-  def getDataString(self):
-    """Get the complete item data as a string"""
-    raise NotImplemented("BaseItem: You must implement getDataString")
+    # Don't default these fields, since they are manditory
+    #self.content = ""
+    #self.html = ""
 
-  def getSummaryString(self):
-    """Get a short summary of the item"""
-    raise NotImplemented("BaseItem: You must implement getSummaryString")
-
-  def title(self):
-    """Get the title of the item"""
-    # All items need a title
-    raise NotImplemented("BaseItem: You must implement title")
-
-  def link(self):
-    """Get the link of the item"""
-    # Default empty string
-    return ""
-
-  def content(self):
-    """Get the content of the item"""
-    # Default empty string
-    return ""
+  def set_all_content(self, content):
+    """Helper to set all content fields to the same value, for simple readers"""
+    self.title = content
+    self.content = content
+    self.html = content

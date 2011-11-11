@@ -36,28 +36,18 @@ class IMAPReader(BaseReader):
       self.items.append(IMAPItem(self.state, {'email':self.email}))
     imap.logout()
 
+  def __str__(self):
+    return "%s(%s)" % (BaseReader.__str__(self), self.email)
+
 
 class IMAPItem(BaseItem):
   """Object for storing an item. Has output formatters"""
   def __init__(self, data, metadata):
-    BaseItem.__init__(self, data, metadata)
+    BaseItem.__init__(self, metadata)
     #self.subj = re.search("[Ss]ubject: ([\w\W]*?)\r\n(\r\n|[Dd]ate: )",
                           #data).group(1)
     #self.date = re.search("[Dd]ate: ([\w\W]*?)\r\n(\r\n|[Ss]ubject: )",
                           #data).group(1)
-
-  def getDataString(self):
-    """Get the complete item data as a string"""
-    return "%s now has %d emails" % (self.metadata['email'], self.data[1][0])
-
-  def getSummaryString(self):
-    """Get a short summary of the item"""
-    return "%s now has %d emails" % (self.metadata['email'], self.data[1][0])
-
-  def title(self):
-    """Get the title of the item"""
-    return "New email for %s" % self.metadata['email']
-
-  def content(self):
-    """Get the content of the item"""
-    return "%s now has %d emails" % (self.metadata['email'], self.data[1][0])
+    self.title = "New email for %s" % self.metadata['email']
+    self.content = "%s now has %d emails" % (self.metadata['email'], data[1][0])
+    self.html = self.content

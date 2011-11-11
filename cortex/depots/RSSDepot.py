@@ -58,13 +58,13 @@ class RSSDepot (BaseDepot):
       raise
       
   def makeGUID(self, item):
-    return "%s#%d" % (item.link(),
-                      time.mktime(item.getMetadata()['time']))
+    return "%s#%d" % (item.link,
+                      time.mktime(item.metadata['time']))
 
   def itemToXML(self, item):
-    return RSS_ITEMBASE % (xml.escape(item.title()),
-                           xml.escape(item.link()),
-                           xml.escape(item.content()),
+    return RSS_ITEMBASE % (xml.escape(item.title),
+                           xml.escape(item.link),
+                           xml.escape(item.html),
                            time.strftime("%a, %d %b %Y %H:%M:%S %Z",
-                           item.getMetadata()['time']),
+                           item.metadata['time']),
                            self.makeGUID(item))

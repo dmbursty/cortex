@@ -1,6 +1,6 @@
 import re
-import urllib2
 
+from common import urlfetch
 from BaseReader import BaseReader, BaseItem
 
 
@@ -22,9 +22,7 @@ class RegexWebsiteReader(BaseReader):
   def checkUpdate(self):
     """Check for an update, and put it in self.items"""
     # Get website data
-    request = urllib2.Request(self.source)
-    opener  = urllib2.build_opener()
-    data    = opener.open(request).read()
+    data = urlfetch.fetch(self.source).read()
     
     # Check for an update
     match = self.regex.search(data)
@@ -34,25 +32,14 @@ class RegexWebsiteReader(BaseReader):
       self.lastmatch = match.group(0)
     elif self.lastmatch != match.group(0):
       self.lastmatch = match.group(0)
-      self.items.append(RegexWebsiteItem(match, {'source':self.source}))
+      self.items.append(RegexWebsiteItem(self.source))
+
+  def __str__(self):
+    return "%s(%s)" % (BaseReader.__str__(self), self.source)
 
 
 class RegexWebsiteItem(BaseItem):
-  def __init__(self, data):
-    BaseItem.__init__(self, data)
-
-  def getDataString(self):
-    """Get the complete item data as a string"""
-    return "Update found for %s" % self.metadata['source']
-
-  def getSummaryString(self):
-    """Get a short summary of the item"""
-    return "Update found for %s" % self.metadata['source']
-
-  def title(self):
-    """Get the title of the item"""
-    return "Update found for %s" % self.metadata['source']
-
-  def link(self):
-    """Get the link of the item"""
-    return self.metadata['source']
+  def __init__(self, source):
+    BaseItem.__init__(self)
+    self.set_all_content("Update found for %s" % source)
+    self.link = source

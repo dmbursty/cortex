@@ -1,8 +1,7 @@
 import re
-import httplib
-import urllib2
 import traceback
 
+from common import urlfetch
 from BaseReader import BaseReader, BaseItem
 
 class SteamSaleReader(BaseReader):
@@ -59,31 +58,13 @@ class SteamSaleReader(BaseReader):
     """Check for an update, and put it in self.items"""
     items = []
     maxPages = 7
-    opener  = urllib2.build_opener()
 
     # Check for multiple pages of sales
     for page in range(1, maxPages):
-      request = urllib2.Request(self.SPECIALS_PAGE_URL % page)
-
-      # Try up to 3 times
-      numTries = 3
-      for i in range(numTries):
-        try:
-          data = opener.open(request).read()
-          new_items = re.findall(self.regex, data)
-          self.log.debug("Found %d sales for page %d" % (len(new_items), page))
-          items.extend(new_items)
-          break
-        except (httplib.IncompleteRead, httplib.BadStatusLine),  e:
-          if i == numTries - 1:
-            self.log.warning(traceback.format_exc())
-            return
-          continue
-        except urllib2.URLError, e:
-          if i == numTries - 1:
-            self.log.warning(traceback.format_exc())
-            return
-          continue
+      data = urlfetch.fetch(self.SPECIALS_PAGE_URL % page).read()
+      new_items = re.findall(self.regex, data)
+      self.log.debug("Found %d sales for page %d" % (len(new_items), page))
+      items.extend(new_items)
 
       # Stop checking pages after an empty one
       if len(new_items) == 0:
@@ -110,32 +91,36 @@ class SteamSaleReader(BaseReader):
     sales.sort()  # Sort by title
 
     if self.diffSales(sales, self.prevsales):
-      self.items.append(SteamSaleItem(sales,
-                                      self.prevsales,
-                                      {"link":self.SPECIALS_URL}))
+      self.items.append(SteamSaleItem(sales, self.prevsales))
       self.prevsales = sales
 
 class SteamSaleItem(BaseItem):
-  def __init__(self, data, prevdata, metadata):
-    # data: list of tuples of (Title, base price, sale price, link url)
-    self.prevdata = prevdata
-    BaseItem.__init__(self, data, metadata)
+  def __init__(self, sales, prevsales):
+    # sales: list of tuples of (Title, base price, sale price, link url)
+    BaseItem.__init__(self)
+    self.title = "Steam sale update!"
+    self.link = SteamSaleReader.SPECIALS_URL
+    self.html = ""
 
-  def getDataString(self):
-    """Get the complete item data as a string"""
-    return self.content()
+    # Generate diff information
+    if prevsales is not None:
+      newsales = self.getDiffSales(sales, prevsales)
+      endsales = self.getDiffSales(prevsales, sales)
+      if newsales or endsales:
+        self.html += "Update<br/>\n"
+        for item in newsales:
+          self.html += self.formatItem(item, "#00CC00")
+        self.html += "</span><br/>\n"
+        for item in endsales:
+          self.html += self.formatItem(item, "#CC0000")
+        self.html += "</span><br/>\n"
 
-  def getSummaryString(self):
-    """Get a short summary of the item"""
-    return self.title()
+    # Full summary
+    self.html += "Full Summary<br/>\n"
+    for item in sales:
+      self.html += self.formatItem(item)
 
-  def title(self):
-    """Get the title of the item"""
-    return "Steam sale update!"
-
-  def link(self):
-    """Get the link of the item"""
-    return self.metadata["link"]
+    self.content = self.html
 
   def formatItem(self, item, color=None):
       if color is None:
@@ -172,32 +157,3 @@ class SteamSaleItem(BaseItem):
       ia += 1
 
     return ret
-
-  def content(self):
-    """Get the content of the item"""
-    ret = ""
-
-    # Generate diff information
-    if self.prevdata is not None:
-      newsales = self.getDiffSales(self.data, self.prevdata)
-      endsales = self.getDiffSales(self.prevdata, self.data)
-      if newsales or endsales:
-        ret += "Update<br/>\n"
-        for item in newsales:
-          ret += self.formatItem(item, "#00CC00")
-        ret += "</span><br/>\n"
-        for item in endsales:
-          ret += self.formatItem(item, "#CC0000")
-        ret += "</span><br/>\n"
-
-    # Full summary
-    ret += "Full Summary<br/>\n"
-    for item in self.data:
-      ret += self.formatItem(item)
-
-    return ret
-
-if __name__ == "__main__":
-  r = SteamSaleReader({})
-  for item in r.getUpdate():
-    print item.content()

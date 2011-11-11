@@ -7,7 +7,7 @@ class CoutDepot (BaseDepot):
 
   def update(self, items):
     for item in items:
-      print item.title()
-      print item.link()
-      print item.content()
+      print item.title
+      print item.link
+      print item.content
       print self.sep

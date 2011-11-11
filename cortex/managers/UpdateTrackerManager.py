@@ -11,24 +11,20 @@ weekday_names = ["Monday", "Tuesday", "Wednesday", "Thursday",
                  "Friday", "Saturday", "Sunday"]
 
 class UpdateTrackerItem(BaseItem):
-  def __init__(self, data, reader_desc):
-    # Data is a string of the histogram data
-    BaseItem.__init__(self, data)
-    self.reader_desc = reader_desc
-    self.reader_name = reader_desc.split(": ", 1)[0]
+  def __init__(self, hists, metadata):
+    # hists is a list of histograms to pull data from
+    BaseItem.__init__(self, metadata)
+    reader_name = metadata['reader_desc'].split(": ", 1)[0]
 
-  def getDataString(self):
-    return self.content()
+    self.title = "Update summary for %s reader" % reader_name
+    self.html = ("Update summary for the following reader:<br/>\n" +
+                 metadata['reader_desc'] +
+                 "<br/><br/>\n" +
+                 "<br/>\n".join([h.getHTML() for h in hists]))
 
-  def getSummaryString(self):
-    return "Update summary available for reader %s" % self.reader_desc
-
-  def title(self):
-    return "Update summary for %s reader" % self.reader_name
-
-  def content(self):
-    return ("Update summary for the following reader:<br/>\n" +
-            self.reader_desc + "<br/><br/>\n" + self.data)
+    self.content = ("Update summary for the following reader:\n" +
+                    metadata['reader_desc'] + "\n\n" +
+                    "\n".join([h.getStr() for h in hists]))
 
 class UpdateTrackerManager (BaseManager):
   def __init__(self, id, mixer, args):
@@ -89,7 +85,7 @@ class UpdateTrackerManager (BaseManager):
 
   def summarize(self):
     hists = [self.day_hist, self.hour_hist, self.delta_hist]
-    histdata = "<br/>\n".join([h.getHTML() for h in hists])
-    self.mixer.update(self, [UpdateTrackerItem(histdata, self.reader_desc)])
+    item = UpdateTrackerItem(hists, {'reader_desc': self.reader_desc})
+    self.mixer.update(self, [item])
     self.summary_timer = threading.Timer(self.summary_secs, self.summarize)
     self.summary_timer.start()
