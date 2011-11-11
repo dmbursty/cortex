@@ -40,11 +40,13 @@ class Controller:
         self.managers.append(manager_class(self.nextID, self.mixer, args))
         self.managers[-1].start()
       except KeyError, e:
-        self.log.error("Manager init failed due to missing arg: %s" % e)
+        self.log.error("Manager %s init failed due to missing arg: %s" %
+            (self.managers[-1], e))
         return 2
       except Exception, e:
         # Manager init failed due to other reason
-        self.log.error("Manager init failed: %s" % traceback.format_exc())
+        self.log.error("Manager %s init failed: %s\nStack Trace:\n%s" %
+            (manager_class.__name__ + str(args), e, traceback.format_exc()))
         return 3
     else:
       # If We couldn't find the manager type

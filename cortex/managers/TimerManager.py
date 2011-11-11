@@ -40,3 +40,6 @@ class TimerManager (BaseManager):
       self.die = True
       self.event.set()
     self.mutex.release()
+
+  def __str__(self):
+    return "%s<%s>" % (BaseManager.__str__(self), self.reader)

@@ -36,6 +36,9 @@ class IMAPReader(BaseReader):
       self.items.append(IMAPItem(self.state, {'email':self.email}))
     imap.logout()
 
+  def __str__(self):
+    return "%s(%s)" % (BaseReader.__str__(self), self.email)
+
 
 class IMAPItem(BaseItem):
   """Object for storing an item. Has output formatters"""

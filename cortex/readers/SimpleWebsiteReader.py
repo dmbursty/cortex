@@ -1,5 +1,4 @@
-import urllib2
-
+from common import urlfetch
 from BaseReader import BaseReader, BaseItem
 
 
@@ -16,15 +15,16 @@ class SimpleWebsiteReader(BaseReader):
 
   def checkUpdate(self):
     # Get data from source
-    request = urllib2.Request(self.source)
-    opener  = urllib2.build_opener()
-    data    = opener.open(request).read()
+    data = urlfetch.fetch(self.source).read()
 
     if self.state is None:
       self.state = data
     elif self.state != data:
       self.state = data
       self.items.append(SimpleWebsiteItem(self.source))
+
+  def __str__(self):
+    return "%s(%s)" % (BaseReader.__str__(self), self.source)
 
 
 class SimpleWebsiteItem(BaseItem):

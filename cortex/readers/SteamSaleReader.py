@@ -1,8 +1,7 @@
 import re
-import httplib
-import urllib2
 import traceback
 
+from common import urlfetch
 from BaseReader import BaseReader, BaseItem
 
 class SteamSaleReader(BaseReader):
@@ -59,31 +58,13 @@ class SteamSaleReader(BaseReader):
     """Check for an update, and put it in self.items"""
     items = []
     maxPages = 7
-    opener  = urllib2.build_opener()
 
     # Check for multiple pages of sales
     for page in range(1, maxPages):
-      request = urllib2.Request(self.SPECIALS_PAGE_URL % page)
-
-      # Try up to 3 times
-      numTries = 3
-      for i in range(numTries):
-        try:
-          data = opener.open(request).read()
-          new_items = re.findall(self.regex, data)
-          self.log.debug("Found %d sales for page %d" % (len(new_items), page))
-          items.extend(new_items)
-          break
-        except (httplib.IncompleteRead, httplib.BadStatusLine),  e:
-          if i == numTries - 1:
-            self.log.warning(traceback.format_exc())
-            return
-          continue
-        except urllib2.URLError, e:
-          if i == numTries - 1:
-            self.log.warning(traceback.format_exc())
-            return
-          continue
+      data = urlfetch.fetch(self.SPECIALS_PAGE_URL % page).read()
+      new_items = re.findall(self.regex, data)
+      self.log.debug("Found %d sales for page %d" % (len(new_items), page))
+      items.extend(new_items)
 
       # Stop checking pages after an empty one
       if len(new_items) == 0:
@@ -131,7 +112,7 @@ class SteamSaleItem(BaseItem):
           self.html += self.formatItem(item, "#00CC00")
         self.html += "</span><br/>\n"
         for item in endsales:
-          ret += self.formatItem(item, "#CC0000")
+          self.html += self.formatItem(item, "#CC0000")
         self.html += "</span><br/>\n"
 
     # Full summary

@@ -52,6 +52,10 @@ class BaseManager (threading.Thread):
   def cleanup(self):
     pass
 
+  # Method for children to define their string representation
+  def __str__(self):
+    return "%s:%d" % (self.__class__.__name__, self.id)
+
   # Children must implement this method
   def doWork(self):
     raise NotImplemented("BaseManager: You must implement doWork")

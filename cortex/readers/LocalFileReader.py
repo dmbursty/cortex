@@ -25,6 +25,8 @@ class LocalFileReader(BaseReader):
       self.items.append(LocalFileItem(self.source))
       self.data = data
     
+  def __str__(self):
+    return "%s(%s)" % (BaseReader.__str__(self), self.source)
 
 class LocalFileItem(BaseItem):
   def __init__(self, filename):

@@ -25,6 +25,10 @@ class BaseReader:
     # changing the items themselves
     return tuple(self.items)
 
+  # Method for children to define their string representation
+  def __str__(self):
+    return self.__class__.__name__
+
   # NOT IMPLMENTED
   def checkUpdate(self):
     """This function must be overwritten and should check for an update

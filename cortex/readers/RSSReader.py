@@ -1,6 +1,6 @@
-import urllib2
 from xml.dom import minidom
 
+from common import urlfetch
 from BaseReader import BaseReader, BaseItem
 
 
@@ -26,10 +26,8 @@ class RSSReader(BaseReader):
   def checkUpdate(self):
     """Check for an update, and put it in self.items"""
     # Pull feed data
-    request = urllib2.Request(self.source)
-    opener  = urllib2.build_opener()
-    feed    = opener.open(request).read()
-    data    = minidom.parseString(feed)
+    feed = urlfetch.fetch(self.source).read()
+    data = minidom.parseString(feed)
 
     # Check if there are new items.  NOTE: The feed has items from newer->older,
     # but we want the items to be older->newer so reverse iterate
@@ -50,11 +48,17 @@ class RSSReader(BaseReader):
 
     self.latest = getItemHash(items[0])
 
+  def __str__(self):
+    return "%s(%s)" % (BaseReader.__str__(self), self.source)
+
 
 class RSSItem(BaseItem):
   def __init__(self, xml, metadata):
     BaseItem.__init__(self, metadata)
     self.title = xml.getElementsByTagName("title")[0].firstChild.data
     self.link = xml.getElementsByTagName("link")[0].firstChild.data
-    self.html =  xml.getElementsByTagName("description")[0].firstChild.data
+    if xml.getElementsByTagName("description"):
+      self.html =  xml.getElementsByTagName("description")[0].firstChild.data
+    else:
+      self.html = ""
     self.content = self.html
