@@ -32,7 +32,7 @@ def fetch(url, raise_on_failure=True):
     if raise_on_failure:
       raise
     else:
-      __log.info("Request failed")
+      __log.info("Request for %s failed" % url)
       return DummyResponse()
 
 def __open(request):
@@ -42,6 +42,7 @@ def __open(request):
     try:
       return opener.open(request)
     except Exception, e:
-      __log.warning(traceback.format_exc())
+      __log.warning("Request for %s failed:\n%s" % (request.full_url,
+                                                    traceback.format_exc()))
       continue
   raise

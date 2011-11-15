@@ -35,8 +35,8 @@ class TimerManager (BaseManager):
         self.mixer.update(self, items)
       self.event.set()
     except Exception, e:
-      self.log.error("TimerManager died while updating: %s" %
-                         traceback.format_exc())
+      self.log.error("TimerManager %s died while updating: %s" %
+          (self, traceback.format_exc()))
       self.die = True
       self.event.set()
     self.mutex.release()

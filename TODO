@@ -1,5 +1,5 @@
-- Cleanup and standardization of Items
-- force manager updates
+- force manager updates over RPC
 - Set up under pylons
 - Refactor readers to allow use from multiple managers
 - Allow for specification of multiple readers per manager in the config
+- Add logging handlers to get different output files for different logging levels
